@@ -1,6 +1,6 @@
 {
   "name": "huanwo",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "description": "唤我 — 桌面小工具合集，Ctrl+Space 随时呼出",
   "author": "HuanWo Team",
   "main": "out/main/main.js",
