@@ -1,7 +1,7 @@
 {
   "name": "huanwo",
   "version": "0.0.1",
-  "description": "唤我 — 桌面小工具合集，Alt+Space 随时呼出",
+  "description": "唤我 — 桌面小工具合集，Ctrl+Space 随时呼出",
   "author": "HuanWo Team",
   "main": "out/main/main.js",
   "scripts": {
