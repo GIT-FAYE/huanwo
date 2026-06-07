@@ -5,6 +5,7 @@ import log from './logger'
 export interface PluginMeta {
   id: string
   name: string
+  category: string
   version: string
   description: string
   icon: string

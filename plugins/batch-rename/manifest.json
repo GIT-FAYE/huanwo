@@ -1,6 +1,7 @@
 {
   "id": "batch-rename",
   "name": "批量重命名",
+  "category": "file",
   "version": "1.0.0",
   "description": "批量重命名文件，支持序号/替换/前后缀/日期规则",
   "icon": "✏️",

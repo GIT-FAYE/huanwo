@@ -1,0 +1,17 @@
+{
+  "id": "qrcode",
+  "name": "二维码生成",
+  "category": "utility",
+  "version": "1.0.0",
+  "description": "文本/URL 生成二维码，支持复制和保存",
+  "icon": "📱",
+  "iconBg": "#E8F5E9",
+  "iconColor": "#2E7D32",
+  "tags": ["二维码", "QR", "链接"],
+  "windowSize": { "width": 480, "height": 550 },
+  "windowResizable": false,
+  "acceptsFiles": false,
+  "fileTypes": [],
+  "handler": "qrcode",
+  "author": "HuanWo Team"
+}

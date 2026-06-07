@@ -1,0 +1,17 @@
+{
+  "id": "color-picker",
+  "name": "颜色取色",
+  "category": "utility",
+  "version": "1.0.0",
+  "description": "拾色器，颜色格式转换（HEX/RGB/HSL）",
+  "icon": "🎨",
+  "iconBg": "#FFF3E0",
+  "iconColor": "#E65100",
+  "tags": ["颜色", "取色", "设计"],
+  "windowSize": { "width": 480, "height": 520 },
+  "windowResizable": false,
+  "acceptsFiles": false,
+  "fileTypes": [],
+  "handler": "color-picker",
+  "author": "HuanWo Team"
+}

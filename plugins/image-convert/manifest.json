@@ -1,6 +1,7 @@
 {
   "id": "image-convert",
   "name": "图片转格式",
+  "category": "image",
   "version": "1.0.0",
   "description": "批量转换图片格式，支持多格式互转",
   "icon": "🔄",

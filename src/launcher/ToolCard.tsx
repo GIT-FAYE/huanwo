@@ -4,14 +4,14 @@ interface Tool {
   id: string; name: string; icon: string; iconBg: string; iconColor: string
 }
 
-interface Props { tool: Tool; isPinned: boolean; onTogglePin: () => void }
+interface Props { tool: Tool; isPinned: boolean; onTogglePin: () => void; onOpen?: (id: string) => void }
 
-export function ToolCard({ tool, isPinned, onTogglePin }: Props) {
+export function ToolCard({ tool, isPinned, onTogglePin, onOpen }: Props) {
   const [hovered, setHovered] = useState(false)
 
   return (
     <div
-      onClick={() => window.api.openTool(tool.id)}
+      onClick={() => onOpen ? onOpen(tool.id) : window.api.openTool(tool.id)}
       onContextMenu={e => { e.preventDefault(); onTogglePin() }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

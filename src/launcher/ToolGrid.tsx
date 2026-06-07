@@ -13,9 +13,10 @@ interface Props {
   tools: Tool[]
   pinned: string[]
   onTogglePin: (id: string) => void
+  onOpen?: (id: string) => void
 }
 
-export function ToolGrid({ tools, pinned, onTogglePin }: Props) {
+export function ToolGrid({ tools, pinned, onTogglePin, onOpen }: Props) {
   return (
     <div style={{
       display: 'grid',
@@ -28,6 +29,7 @@ export function ToolGrid({ tools, pinned, onTogglePin }: Props) {
           tool={tool}
           isPinned={pinned.includes(tool.id)}
           onTogglePin={() => onTogglePin(tool.id)}
+          onOpen={onOpen}
         />
       ))}
     </div>

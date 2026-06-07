@@ -6,6 +6,8 @@ import { ImageConvertTool } from './tool-window/ImageConvertTool'
 import { SettingsPage } from './settings/SettingsPage'
 import { BatchRenameTool } from './tool-window/BatchRenameTool'
 import { TextTranslateTool } from './tool-window/TextTranslateTool'
+import { QrcodeTool } from './tool-window/QrcodeTool'
+import { ColorPickerTool } from './tool-window/ColorPickerTool'
 import './shared/theme/theme.css'
 
 function Router() {
@@ -33,6 +35,10 @@ function Router() {
   }, [])
 
   switch (route) {
+    case '/qrcode':
+      return <QrcodeTool />
+    case '/color-picker':
+      return <ColorPickerTool />
     case '/text-translate':
       return <TextTranslateTool />
     case '/settings':
