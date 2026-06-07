@@ -10,6 +10,10 @@ import { QrcodeTool } from './tool-window/QrcodeTool'
 import { ColorPickerTool } from './tool-window/ColorPickerTool'
 import './shared/theme/theme.css'
 
+function applyTheme(theme: string) {
+  document.documentElement.setAttribute('data-theme', theme)
+}
+
 function Router() {
   const [route, setRoute] = useState(window.location.hash.slice(1))
 
@@ -20,18 +24,29 @@ function Router() {
   }, [])
 
   useEffect(() => {
-    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
+    // 从 config 加载主题
+    window.api?.getConfig('theme').then((theme: string) => {
+      const t = theme || 'auto'
+      if (t === 'auto') {
+        applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      } else {
+        applyTheme(t)
+      }
+    })
 
+    // 监听主题变更（设置页修改 + 系统切换）
+    window.api?.onThemeChange?.((theme: string) => {
+      applyTheme(theme)
+    })
+
+    // 系统主题变化兜底（仅在 auto 模式）
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const h = (e: MediaQueryListEvent) => {
-      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light')
+      window.api?.getConfig('theme').then((t: string) => {
+        if (!t || t === 'auto') applyTheme(e.matches ? 'dark' : 'light')
+      })
     }
     mq.addEventListener('change', h)
-
-    window.api?.onThemeChange?.((isDark: boolean) => {
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light')
-    })
   }, [])
 
   switch (route) {

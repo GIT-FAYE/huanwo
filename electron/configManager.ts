@@ -7,6 +7,7 @@ interface Config {
   autoUpdate: boolean
   singleToolMode: boolean
   deepseekApiKey: string
+  theme: 'auto' | 'light' | 'dark' | 'eye-care' | 'fresh'
 }
 
 const store = new Store<Config>({
@@ -16,7 +17,8 @@ const store = new Store<Config>({
     autoStart: false,
     autoUpdate: true,
     singleToolMode: true,
-    deepseekApiKey: ''
+    deepseekApiKey: '',
+    theme: 'auto'
   }
 })
 

@@ -22,6 +22,11 @@ export function LauncherPanel() {
   const [tools, setTools] = useState<ToolItem[]>([])
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-panel', 'true')
+    return () => document.documentElement.removeAttribute('data-panel')
+  }, [])
+
+  useEffect(() => {
     window.api.getPlugins().then((plugins: any[]) => {
       setTools([
         ...plugins.map((p: any) => ({

@@ -9,6 +9,7 @@ export function SettingsPage() {
   const [autoUpdate, setAutoUpdate] = useState(true)
   const [singleTool, setSingleTool] = useState(true)
   const [apiKey, setApiKey] = useState('')
+  const [theme, setTheme] = useState('auto')
   const [hotkeyConflict, setHotkeyConflict] = useState(false)
 
   // 更新相关
@@ -24,6 +25,7 @@ export function SettingsPage() {
     window.api.getConfig('autoUpdate').then((v: any) => setAutoUpdate(v))
     window.api.getConfig('singleToolMode').then((v: any) => setSingleTool(v ?? true))
     window.api.getConfig('deepseekApiKey').then((v: any) => setApiKey(v ?? ''))
+    window.api.getConfig('theme').then((v: any) => setTheme(v ?? 'auto'))
     window.api.getVersion().then((v: string) => setAppVersion(v))
 
     window.api.onUpdateAvailable((info: any) => {
@@ -158,6 +160,33 @@ export function SettingsPage() {
           <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>点击输入框后按下组合键即可修改</span>
         </Section>
 
+        <Section title="主题">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {([
+              { value: 'auto', label: '🌓 跟随系统' },
+              { value: 'light', label: '☀️ 浅色' },
+              { value: 'dark', label: '🌙 深色' },
+              { value: 'eye-care', label: '🌿 护眼' },
+              { value: 'fresh', label: '🍃 清新' },
+            ]).map(item => (
+              <button
+                key={item.value}
+                onClick={() => {
+                  setTheme(item.value)
+                  window.api.setConfig('theme', item.value)
+                }}
+                style={{
+                  ...themeBtnStyle,
+                  background: theme === item.value ? 'var(--color-primary)' : 'var(--bg-secondary)',
+                  color: theme === item.value ? '#fff' : 'var(--text-secondary)',
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </Section>
+
         <Section title="启动">
           <label style={labelStyle}>
             <Switch checked={autoStart} onChange={() => { setAutoStart(!autoStart); window.api.setConfig('autoStart', !autoStart) }} />
@@ -290,4 +319,9 @@ const progressBarInner: React.CSSProperties = {
   height: '100%', borderRadius: 3,
   background: 'var(--color-primary)',
   transition: 'width 0.3s ease',
+}
+const themeBtnStyle: React.CSSProperties = {
+  border: 'none', borderRadius: 8, padding: '7px 14px',
+  fontSize: 12, cursor: 'pointer', fontWeight: 500,
+  transition: 'all var(--transition-fast)',
 }
