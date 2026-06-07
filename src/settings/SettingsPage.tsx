@@ -9,6 +9,7 @@ export function SettingsPage() {
   const [autoUpdate, setAutoUpdate] = useState(true)
   const [singleTool, setSingleTool] = useState(true)
   const [apiKey, setApiKey] = useState('')
+  const [hotkeyConflict, setHotkeyConflict] = useState(false)
 
   // 更新相关
   const [appVersion, setAppVersion] = useState('0.0.1')
@@ -43,6 +44,10 @@ export function SettingsPage() {
       setUpdateStatus('error')
       setUpdateError(msg)
     })
+
+    window.api.onHotkeyConflict((hk: string) => {
+      if (hk === hotkey) setHotkeyConflict(true)
+    })
   }, [])
 
   const [recording, setRecording] = useState(false)
@@ -62,8 +67,11 @@ export function SettingsPage() {
     else return
     const combo = keys.join('+')
     setHotkey(combo)
+    setHotkeyConflict(false)
     window.api.setConfig('hotkey', combo)
-    window.api.updateHotkey(combo)
+    window.api.updateHotkey(combo).then((ok: boolean) => {
+      if (!ok) setHotkeyConflict(true)
+    })
     setRecording(false)
   }
 
@@ -142,6 +150,11 @@ export function SettingsPage() {
             }}
             placeholder="如 Ctrl+Space"
           />
+          {hotkeyConflict && (
+            <span style={{ fontSize: 11, color: 'var(--color-danger, #dc2626)', marginTop: 4, display: 'block' }}>
+              ⚠ 该快捷键可能被其他程序占用，注册失败
+            </span>
+          )}
           <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 4, display: 'block' }}>点击输入框后按下组合键即可修改</span>
         </Section>
 

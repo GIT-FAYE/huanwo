@@ -7,7 +7,7 @@ import { convertImages } from './tools/image-convert'
 import { previewRename, executeRename } from './tools/batch-rename'
 import { translateWithDeepSeek } from './tools/text-translate'
 import { getPlugin, getAllPlugins } from './pluginRegistry'
-import { getConfig, setConfig } from './configManager'
+import { getConfig, setConfig, store } from './configManager'
 import log from './logger'
 
 let launcherWin: BrowserWindow | null = null
@@ -149,6 +149,17 @@ ipcMain.handle('config:set', (_event, key: string, value: any) => {
     app.setLoginItemSettings({ openAtLogin: value })
   }
   return true
+})
+
+// 工具参数历史记忆
+ipcMain.handle('toolParams:get', (_event, toolId: string) => {
+  const params = store.get('toolParams', {}) as Record<string, any>
+  return params[toolId] || {}
+})
+ipcMain.handle('toolParams:set', (_event, toolId: string, params: any) => {
+  const all = (store.get('toolParams', {}) as Record<string, any>) || {}
+  all[toolId] = params
+  store.set('toolParams', all)
 })
 
 // 日志导出

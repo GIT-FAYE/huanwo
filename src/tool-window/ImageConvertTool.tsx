@@ -29,10 +29,15 @@ export function ImageConvertTool() {
 
   // 恢复上次参数
   useEffect(() => {
-    window.api.getConfig('convertHistory').then((h: any) => {
-      if (h) { setTargetFormat(h.format ?? 'webp'); setQuality(h.quality ?? 85) }
+    window.api.getToolParams('image-convert').then((h: any) => {
+      if (h && Object.keys(h).length > 0) { setTargetFormat(h.format ?? 'webp'); setQuality(h.quality ?? 85) }
     })
   }, [])
+
+  // 保存参数
+  useEffect(() => {
+    window.api.setToolParams('image-convert', { format: targetFormat, quality })
+  }, [targetFormat, quality])
 
   // 剪贴板检测
   useEffect(() => {
@@ -116,7 +121,6 @@ export function ImageConvertTool() {
     }
     setProcessing(false)
     setProgress({ current: 0, total: 0 })
-    window.api.setConfig('convertHistory', { format: targetFormat, quality })
   }
 
   const handleAbort = () => {

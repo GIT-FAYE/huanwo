@@ -20,10 +20,15 @@ contextBridge.exposeInMainWorld('api', {
   },
   getConfig: (key: string) => ipcRenderer.invoke('config:get', key),
   setConfig: (key: string, value: any) => ipcRenderer.invoke('config:set', key, value),
+  getToolParams: (toolId: string) => ipcRenderer.invoke('toolParams:get', toolId),
+  setToolParams: (toolId: string, params: any) => ipcRenderer.invoke('toolParams:set', toolId, params),
   exportLogs: () => ipcRenderer.invoke('log:export'),
   renamePreview: (files: string[], rule: any) => ipcRenderer.invoke('rename:preview', files, rule),
   renameExecute: (previews: any[]) => ipcRenderer.invoke('rename:execute', previews),
   updateHotkey: (hotkey: string) => ipcRenderer.invoke('hotkey:update', hotkey),
+  onHotkeyConflict: (cb: (hotkey: string) => void) => {
+    ipcRenderer.on('hotkey:conflict', (_, hotkey) => cb(hotkey))
+  },
 
   // 更新相关
   checkForUpdates: () => ipcRenderer.invoke('update:check'),

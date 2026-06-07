@@ -26,14 +26,28 @@ export function BatchRenameTool() {
   const [result, setResult] = useState<string | null>(null)
 
   useEffect(() => {
-    window.api.getConfig('renameHistory').then((h: any) => {
-      if (h) {
+    window.api.getToolParams('batch-rename').then((h: any) => {
+      if (h && Object.keys(h).length > 0) {
         setRuleType(h.ruleType ?? 'sequence')
         setSeqStart(h.seqStart ?? 1)
         setSeqDigits(h.seqDigits ?? 3)
+        if (h.findText !== undefined) setFindText(h.findText)
+        if (h.replaceText !== undefined) setReplaceText(h.replaceText)
+        if (h.useRegex !== undefined) setUseRegex(h.useRegex)
+        if (h.prefix !== undefined) setPrefix(h.prefix)
+        if (h.suffix !== undefined) setSuffix(h.suffix)
+        if (h.dateTemplate !== undefined) setDateTemplate(h.dateTemplate)
+        if (h.template !== undefined) setTemplate(h.template)
       }
     })
   }, [])
+
+  useEffect(() => {
+    window.api.setToolParams('batch-rename', {
+      ruleType, seqStart, seqDigits, findText, replaceText,
+      useRegex, prefix, suffix, dateTemplate, template
+    })
+  }, [ruleType, seqStart, seqDigits, findText, replaceText, useRegex, prefix, suffix, dateTemplate, template])
 
   const addFiles = (paths: string[]) => {
     setFiles(prev => {
@@ -66,7 +80,6 @@ export function BatchRenameTool() {
     const result = await window.api.renameExecute(previews)
     setResult(result.summary)
     setFiles(previews.map((p: any) => ({ path: p.newPath, name: p.newName, status: 'done' as const })))
-    window.api.setConfig('renameHistory', { ruleType, seqStart, seqDigits })
   }
 
   return (

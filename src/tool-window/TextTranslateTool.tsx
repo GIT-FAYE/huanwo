@@ -10,10 +10,18 @@ export function TextTranslateTool() {
   const [style, setStyle] = useState('general')
 
   useEffect(() => {
-    window.api.getConfig('transSourceLang').then((v: any) => { if (v) setSourceLang(v) })
-    window.api.getConfig('transTargetLang').then((v: any) => { if (v) setTargetLang(v) })
-    window.api.getConfig('transStyle').then((v: any) => { if (v) setStyle(v) })
+    window.api.getToolParams('text-translate').then((h: any) => {
+      if (h && Object.keys(h).length > 0) {
+        if (h.sourceLang) setSourceLang(h.sourceLang)
+        if (h.targetLang) setTargetLang(h.targetLang)
+        if (h.style) setStyle(h.style)
+      }
+    })
   }, [])
+
+  useEffect(() => {
+    window.api.setToolParams('text-translate', { sourceLang, targetLang, style })
+  }, [sourceLang, targetLang, style])
 
   useEffect(() => {
     if (!input.trim()) { setOutput(''); return }
@@ -43,7 +51,6 @@ export function TextTranslateTool() {
             <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>输入</span>
             <select value={sourceLang} onChange={e => {
               setSourceLang(e.target.value)
-              window.api.setConfig('transSourceLang', e.target.value)
             }} style={selStyle}>
               <option value="auto">自动检测</option>
               <option value="zh">中文 (Chinese)</option>
@@ -71,7 +78,6 @@ export function TextTranslateTool() {
             <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>→</span>
             <select value={targetLang} onChange={e => {
               setTargetLang(e.target.value)
-              window.api.setConfig('transTargetLang', e.target.value)
             }} style={selStyle}>
               <option value="zh">中文 (Chinese)</option>
               <option value="en">English (英语)</option>
@@ -99,7 +105,6 @@ export function TextTranslateTool() {
           <div style={{ display: 'flex', gap: 4 }}>
             <select value={style} onChange={e => {
               setStyle(e.target.value)
-              window.api.setConfig('transStyle', e.target.value)
             }} style={selStyle}>
               <option value="general">通用翻译</option>
               <option value="ecommerce">跨境电商</option>

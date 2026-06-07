@@ -26,8 +26,8 @@ export function ImageCompressTool() {
 
   // 恢复上次参数
   useEffect(() => {
-    window.api.getConfig('compressHistory').then((h: any) => {
-      if (h) {
+    window.api.getToolParams('image-compress').then((h: any) => {
+      if (h && Object.keys(h).length > 0) {
         setQuality(h.quality ?? 80)
         setMode(h.mode ?? 'smart')
         setProgressive(h.progressive ?? false)
@@ -39,9 +39,9 @@ export function ImageCompressTool() {
   }, [])
 
   // 保存参数
-  const saveHistory = () => {
-    window.api.setConfig('compressHistory', { quality, mode, progressive, stripExif, useTargetSize, targetSizeMB })
-  }
+  useEffect(() => {
+    window.api.setToolParams('image-compress', { quality, mode, progressive, stripExif, useTargetSize, targetSizeMB })
+  }, [quality, mode, progressive, stripExif, useTargetSize, targetSizeMB])
 
   // 检测剪贴板
   useEffect(() => {
@@ -120,7 +120,6 @@ export function ImageCompressTool() {
     }
     setProcessing(false)
     setProgress({ current: 0, total: 0 })
-    saveHistory()
   }
 
   // 监听进度
