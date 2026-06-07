@@ -12,8 +12,14 @@ export async function runOcr(filePath: string, lang: string): Promise<{ text: st
 
   try {
     const { data } = await worker.recognize(filePath)
+    // 清理多余空格和空行
+    const clean = data.text
+      .split('\n')
+      .map(line => line.replace(/\s{2,}/g, ' ').trim())
+      .filter(line => line.length > 0)
+      .join('\n')
     return {
-      text: data.text,
+      text: clean,
       confidence: Math.round(data.confidence)
     }
   } finally {

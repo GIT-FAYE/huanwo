@@ -127,9 +127,10 @@ ipcMain.handle('tool:open', (_event, toolId: string) => {
 // ========== 文件选择 ==========
 
 ipcMain.handle('dialog:selectFiles', async (_event, exts: string[]) => {
+  const cleanExts = exts.map(e => e.replace(/^\./, ''))
   const result = await dialog.showOpenDialog({
     properties: ['openFile', 'multiSelections'],
-    filters: [{ name: '图片', extensions: exts }]
+    filters: [{ name: '图片', extensions: cleanExts }]
   })
   return result.canceled ? [] : result.filePaths
 })
@@ -249,10 +250,16 @@ ipcMain.handle('ocr', async (_event, filePath: string, lang: string) => {
 
 // 读取图片为 data URL（用于预览）
 ipcMain.handle('image:dataUrl', async (_event, filePath: string) => {
-  const ext = path.extname(filePath).toLowerCase().slice(1) || 'png'
+  const ext = path.extname(filePath).toLowerCase()
+  const mimeMap: Record<string, string> = {
+    '.jpg': 'jpeg', '.jpeg': 'jpeg', '.png': 'png',
+    '.webp': 'webp', '.bmp': 'bmp', '.gif': 'gif',
+    '.tiff': 'tiff', '.avif': 'avif'
+  }
+  const mime = mimeMap[ext] || 'png'
   const buf = fs.readFileSync(filePath)
   const base64 = buf.toString('base64')
-  return `data:image/${ext};base64,${base64}`
+  return `data:image/${mime};base64,${base64}`
 })
 
 // 剪贴板文本
