@@ -6,7 +6,10 @@ interface Config {
   autoStart: boolean
   autoUpdate: boolean
   singleToolMode: boolean
+  activeProvider: 'qwen' | 'deepseek' | 'mimo'
   deepseekApiKey: string
+  qwenApiKey: string
+  mimoApiKey: string
   theme: 'auto' | 'light' | 'dark' | 'eye-care' | 'fresh'
 }
 
@@ -17,7 +20,10 @@ const store = new Store<Config>({
     autoStart: false,
     autoUpdate: true,
     singleToolMode: true,
+    activeProvider: 'qwen',
     deepseekApiKey: '',
+    qwenApiKey: '',
+    mimoApiKey: '',
     theme: 'auto'
   }
 })

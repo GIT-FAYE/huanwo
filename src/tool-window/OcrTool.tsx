@@ -7,35 +7,25 @@ interface FileItem {
   dataUrl?: string
 }
 
-const LANGS = [
-  { value: 'chi_sim+eng', label: '中英混合' },
-  { value: 'chi_sim', label: '简体中文' },
-  { value: 'eng', label: 'English' },
-  { value: 'jpn', label: '日本語' },
-  { value: 'kor', label: '한국어' },
-]
+const PROVIDER_NAMES: Record<string, string> = {
+  qwen: '千问', deepseek: 'DeepSeek', mimo: 'MiMo',
+}
 
 export function OcrTool() {
   const [files, setFiles] = useState<FileItem[]>([])
-  const [lang, setLang] = useState('chi_sim+eng')
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [previewIndex, setPreviewIndex] = useState(0)
+  const [provider, setProvider] = useState('qwen')
+  const [ocrProgress, setOcrProgress] = useState({ current: 0, total: 0 })
 
   useEffect(() => {
-    window.api.getToolParams('ocr').then((h: any) => {
-      if (h && Object.keys(h).length > 0 && h.lang) setLang(h.lang)
-    })
-    // 自动检测剪贴板图片
+    window.api.getConfig('activeProvider').then((v: any) => setProvider(v || 'qwen'))
     window.api.checkClipboard().then((path: string | null) => {
       if (path) addFile(path)
     })
   }, [])
-
-  useEffect(() => {
-    window.api.setToolParams('ocr', { lang })
-  }, [lang])
 
   const addFile = async (path: string) => {
     const name = path.split('\\').pop() || 'image.png'
@@ -58,11 +48,13 @@ export function OcrTool() {
     if (files.length === 0) return
     setLoading(true)
     setResult('')
+    setOcrProgress({ current: 0, total: files.length })
     try {
       const texts: string[] = []
-      for (const file of files) {
-        const r = await window.api.runOcr(file.path, lang)
+      for (let i = 0; i < files.length; i++) {
+        const r = await window.api.runOcr(files[i].path)
         if (r.text.trim()) texts.push(r.text.trim())
+        setOcrProgress({ current: i + 1, total: files.length })
       }
       if (texts.length === 0) {
         setResult('未识别到文字')
@@ -87,19 +79,32 @@ export function OcrTool() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button onClick={handleSelect} style={primaryBtn}>📁 选择图片</button>
-          <select value={lang} onChange={e => setLang(e.target.value)} style={selStyle}>
-            {LANGS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-          </select>
-          {files.length > 1 && <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginLeft: 'auto' }}>{previewIndex + 1} / {files.length}</span>}
-          {files.length > 0 && (
-            <button onClick={handleOcr} disabled={loading} style={{
-              ...primaryBtn, background: loading ? 'var(--bg-tertiary)' : 'var(--color-primary)',
-              color: loading ? 'var(--text-tertiary)' : '#fff', opacity: loading ? 0.7 : 1,
-            }}>
-              {loading ? '⏳ 识别中…' : '🔍 识别'}
-            </button>
-          )}
+          {files.length > 1 && <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{previewIndex + 1} / {files.length}</span>}
+          <button onClick={handleOcr} disabled={files.length === 0 || loading} style={{
+            ...primaryBtn, marginLeft: 'auto',
+            background: files.length === 0 ? 'var(--bg-tertiary)' : loading ? 'var(--bg-tertiary)' : 'var(--color-primary)',
+            color: files.length === 0 ? 'var(--text-tertiary)' : loading ? 'var(--text-tertiary)' : '#fff',
+            cursor: files.length === 0 || loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.7 : 1,
+          }}>
+            {loading ? '⏳ 识别中…' : '🔍 开始识别'}
+          </button>
         </div>
+
+        {loading && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ flex: 1, height: 4, borderRadius: 2, background: 'var(--bg-tertiary)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 2, background: 'var(--color-primary)',
+                width: `${ocrProgress.total > 0 ? (ocrProgress.current / ocrProgress.total) * 100 : 0}%`,
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+              {ocrProgress.current}/{ocrProgress.total}
+            </span>
+          </div>
+        )}
 
         {files.length > 0 ? (
           <>
@@ -137,7 +142,9 @@ export function OcrTool() {
         {result && (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)' }}>识别结果</span>
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-tertiary)' }}>
+                由 {PROVIDER_NAMES[provider] || provider} AI 输出识别结果
+              </span>
               <button
                 onClick={() => { window.api.writeClipboardText(result); setCopied(true); setTimeout(() => setCopied(false), 1500) }}
                 style={copyBtn}

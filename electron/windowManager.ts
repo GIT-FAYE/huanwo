@@ -5,7 +5,7 @@ import os from 'os'
 import { compressImages } from './tools/image-compress'
 import { convertImages } from './tools/image-convert'
 import { previewRename, executeRename } from './tools/batch-rename'
-import { translateWithDeepSeek } from './tools/text-translate'
+import { translateText } from './tools/text-translate'
 import { runOcr } from './tools/ocr'
 import { getPlugin, getAllPlugins } from './pluginRegistry'
 import { getConfig, setConfig, store } from './configManager'
@@ -239,13 +239,18 @@ ipcMain.handle('rename:execute', async (_event, previews: any[]) => {
 
 // 翻译
 ipcMain.handle('translate', async (_event, text: string, from?: string, to?: string, style?: string) => {
-  const apiKey = getConfig('deepseekApiKey') || ''
-  return await translateWithDeepSeek(text, apiKey, from, to, style)
+  const provider = getConfig('activeProvider') || 'qwen'
+  const keyMap: Record<string, any> = { qwen: 'qwenApiKey', deepseek: 'deepseekApiKey', mimo: 'mimoApiKey' }
+  const apiKey = getConfig(keyMap[provider]) || ''
+  return await translateText(text, apiKey, provider, from, to, style)
 })
 
 // OCR 图片识字
-ipcMain.handle('ocr', async (_event, filePath: string, lang: string) => {
-  return await runOcr(filePath, lang)
+ipcMain.handle('ocr', async (_event, filePath: string) => {
+  const provider = getConfig('activeProvider') || 'qwen'
+  const keyMap: Record<string, any> = { qwen: 'qwenApiKey', deepseek: 'deepseekApiKey', mimo: 'mimoApiKey' }
+  const apiKey = getConfig(keyMap[provider]) || ''
+  return await runOcr(filePath, apiKey, provider)
 })
 
 // 读取图片为 data URL（用于预览）

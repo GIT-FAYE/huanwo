@@ -8,8 +8,10 @@ export function TextTranslateTool() {
   const [sourceLang, setSourceLang] = useState('auto')
   const [targetLang, setTargetLang] = useState('en')
   const [style, setStyle] = useState('general')
+  const [provider, setProvider] = useState('qwen')
 
   useEffect(() => {
+    window.api.getConfig('activeProvider').then((v: any) => setProvider(v || 'qwen'))
     window.api.getToolParams('text-translate').then((h: any) => {
       if (h && Object.keys(h).length > 0) {
         if (h.sourceLang) setSourceLang(h.sourceLang)
@@ -34,150 +36,107 @@ export function TextTranslateTool() {
       setLoading(false)
     }, 500)
     return () => clearTimeout(timer)
-  }, [input, sourceLang, targetLang])
+  }, [input, sourceLang, targetLang, style])
 
-  const pasteFromClipboard = async () => {
-    const text = await window.api.readClipboardText()
-    if (text) setInput(text)
+  const pasteFromClipboard = () => {
+    window.api.readClipboardText().then((t: string) => { if (t) setInput(prev => prev + t) })
+  }
+  const handleSwap = () => {
+    if (sourceLang === 'auto') return
+    const tmp = sourceLang
+    setSourceLang(targetLang)
+    setTargetLang(tmp)
+    setInput(output)
   }
 
-  const handleSwap = () => setInput(output)
+  const providerName = provider === 'qwen' ? '千问' : provider === 'mimo' ? 'MiMo' : 'DeepSeek'
 
   return (
     <ToolWindowShell title="文本翻译" toolId="text-translate">
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>输入</span>
-            <select value={sourceLang} onChange={e => {
-              setSourceLang(e.target.value)
-            }} style={selStyle}>
-              <option value="auto">自动检测</option>
-              <option value="zh">中文 (Chinese)</option>
-              <option value="en">English (英语)</option>
-              <option value="ja">日本語 (日语)</option>
-              <option value="ko">한국어 (韩语)</option>
-              <option value="th">ไทย (泰语)</option>
-              <option value="vi">Tiếng Việt (越南语)</option>
-              <option value="id">Indonesia (印尼语)</option>
-              <option value="ms">Melayu (马来语)</option>
-              <option value="tl">Tagalog (菲律宾语)</option>
-              <option value="fr">Français (法语)</option>
-              <option value="de">Deutsch (德语)</option>
-              <option value="es">Español (西班牙语)</option>
-              <option value="pt">Português (葡萄牙语)</option>
-              <option value="it">Italiano (意大利语)</option>
-              <option value="ru">Русский (俄语)</option>
-              <option value="ar">العربية (阿拉伯语)</option>
-              <option value="hi">हिन्दी (印地语)</option>
-              <option value="nl">Nederlands (荷兰语)</option>
-              <option value="pl">Polski (波兰语)</option>
-              <option value="sv">Svenska (瑞典语)</option>
-              <option value="tr">Türkçe (土耳其语)</option>
-            </select>
-            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>→</span>
-            <select value={targetLang} onChange={e => {
-              setTargetLang(e.target.value)
-            }} style={selStyle}>
-              <option value="zh">中文 (Chinese)</option>
-              <option value="en">English (英语)</option>
-              <option value="ja">日本語 (日语)</option>
-              <option value="ko">한국어 (韩语)</option>
-              <option value="th">ไทย (泰语)</option>
-              <option value="vi">Tiếng Việt (越南语)</option>
-              <option value="id">Indonesia (印尼语)</option>
-              <option value="ms">Melayu (马来语)</option>
-              <option value="tl">Tagalog (菲律宾语)</option>
-              <option value="fr">Français (法语)</option>
-              <option value="de">Deutsch (德语)</option>
-              <option value="es">Español (西班牙语)</option>
-              <option value="pt">Português (葡萄牙语)</option>
-              <option value="it">Italiano (意大利语)</option>
-              <option value="ru">Русский (俄语)</option>
-              <option value="ar">العربية (阿拉伯语)</option>
-              <option value="hi">हिन्दी (印地语)</option>
-              <option value="nl">Nederlands (荷兰语)</option>
-              <option value="pl">Polski (波兰语)</option>
-              <option value="sv">Svenska (瑞典语)</option>
-              <option value="tr">Türkçe (土耳其语)</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <select value={style} onChange={e => {
-              setStyle(e.target.value)
-            }} style={selStyle}>
-              <option value="general">通用翻译</option>
-              <option value="ecommerce">跨境电商</option>
-              <option value="listing">Listing 优化</option>
-              <option value="casual">日常口语</option>
-              <option value="formal">正式商务</option>
-              <option value="tech">技术文档</option>
-              <option value="subtitle">视频字幕</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button onClick={pasteFromClipboard} style={smBtn}>📋 粘贴</button>
-            <button onClick={() => setInput('')} style={smBtn}>清空</button>
-          </div>
-        </div>
-        <textarea
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder="输入文本，自动检测中英文…"
-          spellCheck={false}
-          style={{
-            flex: 1, minHeight: 120,
-            padding: 10, borderRadius: 8,
-            border: '1px solid var(--border-default)',
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-primary)',
-            fontSize: 13, fontFamily: 'inherit',
-            resize: 'none', outline: 'none',
-          }}
-        />
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 10 }}>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <button onClick={handleSwap} style={{ ...smBtn, fontSize: 16, padding: '4px 12px' }}>⇅</button>
+        {/* 工具栏 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <select value={sourceLang} onChange={e => setSourceLang(e.target.value)} style={selStyle}>
+            <option value="auto">自动检测</option>
+            {LANGUAGES.map(l => <option key={l} value={l}>{LANG_MAP[l]}</option>)}
+          </select>
+          <button onClick={handleSwap} disabled={sourceLang === 'auto'} style={swapBtn}>⇄</button>
+          <select value={targetLang} onChange={e => setTargetLang(e.target.value)} style={selStyle}>
+            {LANGUAGES.map(l => <option key={l} value={l}>{LANG_MAP[l]}</option>)}
+          </select>
+          <span style={{ fontSize: 10, color: 'var(--text-tertiary)', margin: '0 2px' }}>·</span>
+          <select value={style} onChange={e => setStyle(e.target.value)} style={{ ...selStyle, minWidth: 90 }}>
+            <option value="general">通用</option>
+            <option value="ecommerce">跨境电商</option>
+            <option value="listing">Listing</option>
+            <option value="casual">口语</option>
+            <option value="formal">商务</option>
+            <option value="tech">技术</option>
+            <option value="subtitle">字幕</option>
+          </select>
+          <button onClick={() => setInput('')} style={actionBtn}>清空</button>
+          <button onClick={pasteFromClipboard} style={{ ...actionBtn, marginLeft: 'auto' }}>📋 粘贴</button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>
-            翻译结果 {loading ? '…' : ''}
+        {/* 输入 */}
+        <textarea value={input} onChange={e => setInput(e.target.value)}
+          placeholder="输入文本，自动检测中英文…" spellCheck={false}
+          style={textArea} />
+
+        {loading && (
+          <div style={{ height: 3, background: 'var(--bg-tertiary)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%', width: '30%', borderRadius: 2, background: 'var(--color-primary)',
+              animation: 'progressPulse 1.2s ease-in-out infinite',
+            }} />
+          </div>
+        )}
+
+        {/* 输出 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: -6 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+            由 {providerName} AI 输出翻译结果{loading ? '…' : ''}
           </span>
-          <button
-            onClick={() => { if (output) window.api.writeClipboardText(output) }}
-            disabled={!output}
-            style={{ ...smBtn, opacity: output ? 1 : 0.4 }}
-          >📋 复制</button>
+          <button onClick={() => { if (output) window.api.writeClipboardText(output) }}
+            disabled={!output} style={{ ...actionBtn, opacity: output ? 1 : 0.4 }}>
+            📋 复制
+          </button>
         </div>
-        <textarea
-          value={output}
-          readOnly
-          placeholder="翻译结果…"
-          style={{
-            flex: 1, minHeight: 120,
-            padding: 10, borderRadius: 8,
-            border: '1px solid var(--border-default)',
-            background: 'var(--bg-secondary)',
-            color: output ? 'var(--text-primary)' : 'var(--text-tertiary)',
-            fontSize: 13, fontFamily: 'inherit',
-            resize: 'none', outline: 'none',
-          }}
-        />
+        <textarea value={output} readOnly placeholder="翻译结果…"
+          style={{ ...textArea, color: output ? 'var(--text-primary)' : 'var(--text-tertiary)' }} />
       </div>
     </ToolWindowShell>
   )
 }
 
-const smBtn: React.CSSProperties = {
+const LANGUAGES = ['zh', 'en', 'ja', 'ko', 'th', 'vi', 'id', 'ms', 'tl', 'fr', 'de', 'es', 'pt', 'it', 'ru', 'ar', 'hi', 'nl', 'pl', 'sv', 'tr']
+const LANG_MAP: Record<string, string> = {
+  zh: '中文', en: 'English', ja: '日本語', ko: '한국어', th: 'ไทย', vi: 'Tiếng Việt',
+  id: 'Indonesia', ms: 'Melayu', tl: 'Tagalog', fr: 'Français', de: 'Deutsch',
+  es: 'Español', pt: 'Português', it: 'Italiano', ru: 'Русский', ar: 'العربية',
+  hi: 'हिन्दी', nl: 'Nederlands', pl: 'Polski', sv: 'Svenska', tr: 'Türkçe',
+}
+
+const textArea: React.CSSProperties = {
+  flex: 1, minHeight: 100, padding: 10, borderRadius: 8,
+  border: '1px solid var(--border-default)', background: 'var(--bg-secondary)',
+  color: 'var(--text-primary)', fontSize: 13, fontFamily: 'inherit',
+  resize: 'none', outline: 'none', lineHeight: 1.6,
+}
+const selStyle: React.CSSProperties = {
+  fontSize: 12, padding: '4px 6px', borderRadius: 6,
+  border: '1px solid var(--border-default)', background: 'var(--bg-secondary)',
+  color: 'var(--text-secondary)', cursor: 'pointer',
+}
+const swapBtn: React.CSSProperties = {
+  border: '1px solid var(--border-default)', borderRadius: 6,
+  padding: '2px 6px', fontSize: 14, cursor: 'pointer',
+  background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+  opacity: 1, lineHeight: 1,
+}
+const actionBtn: React.CSSProperties = {
   border: '1px solid var(--border-default)', borderRadius: 6,
   padding: '3px 10px', fontSize: 11, cursor: 'pointer',
   background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
-}
-
-const selStyle: React.CSSProperties = {
-  fontSize: 11, padding: '2px 4px', borderRadius: 4,
-  border: '1px solid var(--border-default)',
-  background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
-  cursor: 'pointer',
 }

@@ -1,4 +1,14 @@
-const API_URL = 'https://api.deepseek.com/v1/chat/completions'
+const ENDPOINTS: Record<string, string> = {
+  deepseek: 'https://api.deepseek.com/v1/chat/completions',
+  qwen: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  mimo: 'https://api.xiaomimimo.com/v1/chat/completions',
+}
+
+const MODELS: Record<string, string> = {
+  deepseek: 'deepseek-chat',
+  qwen: 'qwen-plus',
+  mimo: 'mimo-v2.5',
+}
 
 const STYLES: Record<string, string> = {
   general: '你是一个翻译助手',
@@ -20,34 +30,36 @@ const LANG_NAMES: Record<string, string> = {
   nl: 'Nederlands', pl: 'Polski', sv: 'Svenska', tr: 'Türkçe',
 }
 
-export async function translateWithDeepSeek(
-  text: string, apiKey: string,
-  from: string = 'auto', to: string = 'en',
-  style: string = 'general'
+export async function translateText(
+  text: string, apiKey: string, provider: string,
+  from: string = 'auto', to: string = 'en', style: string = 'general'
 ): Promise<string> {
   if (!text.trim()) return ''
-  if (!apiKey) return '请在设置中配置 DeepSeek API Key'
+  if (!apiKey) return '请在设置中配置 API Key'
 
   const source = LANG_NAMES[from] || from
   const target = LANG_NAMES[to] || to
   const persona = STYLES[style] || STYLES.general
+  const url = ENDPOINTS[provider] || ENDPOINTS.deepseek
+  const model = MODELS[provider] || MODELS.deepseek
+  const isMimo = provider === 'mimo'
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        [isMimo ? 'api-key' : 'Authorization']: isMimo ? apiKey : `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model,
         messages: [
           { role: 'system', content: `${persona}。将用户输入的${source}翻译成${target}。只返回翻译结果，不要解释。` },
           { role: 'user', content: text }
         ],
         temperature: 0.3,
-        max_tokens: 2000
-      })
+        max_tokens: 2000,
+      }),
     })
 
     const data: any = await res.json()
