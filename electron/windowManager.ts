@@ -8,7 +8,7 @@ import { previewRename, executeRename } from './tools/batch-rename'
 import { translateWithDeepSeek } from './tools/text-translate'
 import { getPlugin, getAllPlugins } from './pluginRegistry'
 import { getConfig, setConfig, store } from './configManager'
-import { setLauncherRef, getPanelBackground } from './themeManager'
+import { setLauncherRef, getPanelBackground, refreshTheme as doRefreshTheme } from './themeManager'
 import log from './logger'
 
 let launcherWin: BrowserWindow | null = null
@@ -151,8 +151,7 @@ ipcMain.handle('config:set', (_event, key: string, value: any) => {
     app.setLoginItemSettings({ openAtLogin: value })
   }
   if (key === 'theme') {
-    const { initTheme } = require('./themeManager')
-    initTheme()
+    doRefreshTheme()
   }
   return true
 })
