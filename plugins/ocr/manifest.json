@@ -1,0 +1,17 @@
+{
+  "id": "ocr",
+  "name": "图片识字",
+  "category": "text",
+  "version": "1.0.0",
+  "description": "从图片中提取文字，支持中英文识别",
+  "icon": "🔍",
+  "iconBg": "#F3E5F5",
+  "iconColor": "#7B1FA2",
+  "tags": ["OCR", "文字", "识别", "图片"],
+  "windowSize": { "width": 560, "height": 620 },
+  "windowResizable": true,
+  "acceptsFiles": true,
+  "fileTypes": [".jpg", ".jpeg", ".png", ".webp", ".bmp"],
+  "handler": "ocr",
+  "author": "HuanWo Team"
+}

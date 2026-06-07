@@ -6,6 +6,7 @@ import { compressImages } from './tools/image-compress'
 import { convertImages } from './tools/image-convert'
 import { previewRename, executeRename } from './tools/batch-rename'
 import { translateWithDeepSeek } from './tools/text-translate'
+import { runOcr } from './tools/ocr'
 import { getPlugin, getAllPlugins } from './pluginRegistry'
 import { getConfig, setConfig, store } from './configManager'
 import { setLauncherRef, getPanelBackground, refreshTheme as doRefreshTheme } from './themeManager'
@@ -239,6 +240,11 @@ ipcMain.handle('rename:execute', async (_event, previews: any[]) => {
 ipcMain.handle('translate', async (_event, text: string, from?: string, to?: string, style?: string) => {
   const apiKey = getConfig('deepseekApiKey') || ''
   return await translateWithDeepSeek(text, apiKey, from, to, style)
+})
+
+// OCR 图片识字
+ipcMain.handle('ocr', async (_event, filePath: string, lang: string) => {
+  return await runOcr(filePath, lang)
 })
 
 // 剪贴板文本

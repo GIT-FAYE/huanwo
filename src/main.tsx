@@ -8,6 +8,7 @@ import { BatchRenameTool } from './tool-window/BatchRenameTool'
 import { TextTranslateTool } from './tool-window/TextTranslateTool'
 import { QrcodeTool } from './tool-window/QrcodeTool'
 import { ColorPickerTool } from './tool-window/ColorPickerTool'
+import { OcrTool } from './tool-window/OcrTool'
 import './shared/theme/theme.css'
 
 function applyTheme(theme: string) {
@@ -52,6 +53,8 @@ function Router() {
   switch (route) {
     case '/qrcode':
       return <QrcodeTool />
+    case '/ocr':
+      return <OcrTool />
     case '/color-picker':
       return <ColorPickerTool />
     case '/text-translate':
