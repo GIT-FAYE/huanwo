@@ -1,0 +1,8 @@
+node_modules/
+dist/
+out/
+.env
+gh_token.txt
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,16 @@
+{
+  "id": "image-compress",
+  "name": "图片压缩",
+  "version": "1.0.0",
+  "description": "批量压缩图片，支持有损/无损模式，支持目标大小模式",
+  "icon": "🗜️",
+  "iconBg": "#e1f5ee",
+  "iconColor": "#0F6E56",
+  "tags": ["图片", "压缩", "批量"],
+  "windowSize": { "width": 560, "height": 600 },
+  "windowResizable": true,
+  "acceptsFiles": true,
+  "fileTypes": [".jpg", ".jpeg", ".png", ".webp", ".gif", ".tiff", ".avif", ".heic"],
+  "handler": "image-compress",
+  "author": "HuanWo Team"
+}

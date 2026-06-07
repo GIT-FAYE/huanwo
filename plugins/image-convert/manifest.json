@@ -1,0 +1,16 @@
+{
+  "id": "image-convert",
+  "name": "图片转格式",
+  "version": "1.0.0",
+  "description": "批量转换图片格式，支持多格式互转",
+  "icon": "🔄",
+  "iconBg": "#e6f1fb",
+  "iconColor": "#185FA5",
+  "tags": ["图片", "格式", "转换"],
+  "windowSize": { "width": 560, "height": 500 },
+  "windowResizable": true,
+  "acceptsFiles": true,
+  "fileTypes": [".jpg", ".jpeg", ".png", ".webp", ".gif", ".tiff", ".avif", ".bmp", ".heic"],
+  "handler": "image-convert",
+  "author": "HuanWo Team"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "batch-rename",
+  "name": "批量重命名",
+  "version": "1.0.0",
+  "description": "批量重命名文件，支持序号/替换/前后缀/日期规则",
+  "icon": "✏️",
+  "iconBg": "#FAEEDA",
+  "iconColor": "#854F0B",
+  "tags": ["文件", "重命名", "批量"],
+  "windowSize": { "width": 560, "height": 520 },
+  "windowResizable": true,
+  "acceptsFiles": true,
+  "fileTypes": ["*"],
+  "handler": "batch-rename",
+  "author": "HuanWo Team"
+}
