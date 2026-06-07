@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('api', {
   getPlugins: () => ipcRenderer.invoke('plugin:list'),
   translateText: (text: string, from?: string, to?: string, style?: string) => ipcRenderer.invoke('translate', text, from, to, style),
   runOcr: (filePath: string, lang: string) => ipcRenderer.invoke('ocr', filePath, lang),
+  readImageDataUrl: (filePath: string) => ipcRenderer.invoke('image:dataUrl', filePath),
   compressImages: (payload: any) => ipcRenderer.invoke('tool:compress', payload),
   convertImages: (payload: any) => ipcRenderer.invoke('tool:convert', payload),
   openOutputDir: (filePath: string) => ipcRenderer.invoke('shell:openDir', filePath),

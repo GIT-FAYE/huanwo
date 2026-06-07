@@ -247,6 +247,14 @@ ipcMain.handle('ocr', async (_event, filePath: string, lang: string) => {
   return await runOcr(filePath, lang)
 })
 
+// 读取图片为 data URL（用于预览）
+ipcMain.handle('image:dataUrl', async (_event, filePath: string) => {
+  const ext = path.extname(filePath).toLowerCase().slice(1) || 'png'
+  const buf = fs.readFileSync(filePath)
+  const base64 = buf.toString('base64')
+  return `data:image/${ext};base64,${base64}`
+})
+
 // 剪贴板文本
 ipcMain.handle('clipboard:readText', () => {
   return clipboard.readText()

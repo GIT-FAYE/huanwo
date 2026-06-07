@@ -4,6 +4,7 @@ import { ToolWindowShell } from './ToolWindowShell'
 interface FileItem {
   path: string
   name: string
+  dataUrl?: string
 }
 
 const LANGS = [
@@ -20,7 +21,7 @@ export function OcrTool() {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [previewIndex, setPreviewIndex] = useState(0)
 
   useEffect(() => {
     window.api.getToolParams('ocr').then((h: any) => {
@@ -28,7 +29,6 @@ export function OcrTool() {
         if (h.lang) setLang(h.lang)
       }
     })
-    // 检测剪贴板图片
     checkClipboard()
   }, [])
 
@@ -41,12 +41,15 @@ export function OcrTool() {
     if (path) addFile(path)
   }
 
-  const addFile = (path: string) => {
+  const addFile = async (path: string) => {
     setFiles(prev => {
       if (prev.some(f => f.path === path)) return prev
       return [...prev, { path, name: path.split('\\').pop() || 'clipboard.png' }]
     })
     setResult('')
+    // 加载预览图
+    const dataUrl = await window.api.readImageDataUrl(path)
+    setFiles(prev => prev.map(f => f.path === path ? { ...f, dataUrl } : f))
   }
 
   const handleSelect = () => {
@@ -82,6 +85,12 @@ export function OcrTool() {
     setTimeout(() => setCopied(false), 1500)
   }
 
+  const removeFile = (i: number) => {
+    setFiles(prev => prev.filter((_, j) => j !== i))
+    if (previewIndex >= files.length - 1) setPreviewIndex(Math.max(0, files.length - 2))
+    setResult('')
+  }
+
   return (
     <ToolWindowShell title="图片识字" toolId="ocr">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -106,36 +115,80 @@ export function OcrTool() {
               <option key={l.value} value={l.value}>{l.label}</option>
             ))}
           </select>
+          {files.length > 1 && (
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>
+              {previewIndex + 1} / {files.length}
+            </span>
+          )}
         </div>
 
-        {/* 文件列表 */}
+        {/* 图片预览 */}
         {files.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {files.map((f, i) => (
-              <div key={i} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '6px 10px', borderRadius: 6, background: 'var(--bg-secondary)',
-                fontSize: 12, color: 'var(--text-secondary)',
-              }}>
-                <span>🖼 {f.name}</span>
+          <div style={{
+            width: '100%', height: 200, borderRadius: 8, border: '1px solid var(--border-default)',
+            background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', overflow: 'hidden', position: 'relative',
+          }}>
+            {files[previewIndex]?.dataUrl ? (
+              <img
+                src={files[previewIndex].dataUrl}
+                alt={files[previewIndex].name}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <span style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>加载中…</span>
+            )}
+
+            {/* 多图切换按钮 */}
+            {files.length > 1 && (
+              <>
                 <button
-                  onClick={() => {
-                    setFiles(prev => prev.filter((_, j) => j !== i))
-                    setResult('')
-                  }}
+                  onClick={() => setPreviewIndex(i => (i - 1 + files.length) % files.length)}
+                  style={navBtnStyle('left')}
+                >◀</button>
+                <button
+                  onClick={() => setPreviewIndex(i => (i + 1) % files.length)}
+                  style={navBtnStyle('right')}
+                >▶</button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* 文件缩略图列表 */}
+        {files.length > 0 && (
+          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4 }}>
+            {files.map((f, i) => (
+              <div
+                key={i}
+                onClick={() => setPreviewIndex(i)}
+                style={{
+                  width: 40, height: 40, borderRadius: 4, cursor: 'pointer',
+                  border: i === previewIndex ? '2px solid var(--color-primary)' : '2px solid transparent',
+                  overflow: 'hidden', flexShrink: 0, position: 'relative',
+                  background: 'var(--bg-tertiary)',
+                }}
+              >
+                {f.dataUrl && (
+                  <img src={f.dataUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+                <button
+                  onClick={e => { e.stopPropagation(); removeFile(i) }}
                   style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-tertiary)', fontSize: 14,
+                    position: 'absolute', top: -2, right: -2,
+                    width: 14, height: 14, borderRadius: '50%',
+                    background: 'var(--color-error, #dc2626)', color: '#fff',
+                    border: 'none', fontSize: 8, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    lineHeight: 1,
                   }}
-                >
-                  ✕
-                </button>
+                >✕</button>
               </div>
             ))}
           </div>
         )}
 
-        {/* 操作按钮 */}
+        {/* 识别按钮 */}
         <button
           onClick={handleOcr}
           disabled={files.length === 0 || loading}
@@ -164,7 +217,7 @@ export function OcrTool() {
               readOnly
               value={result}
               style={{
-                width: '100%', height: 200, padding: 10, borderRadius: 8,
+                width: '100%', height: 160, padding: 10, borderRadius: 8,
                 border: '1px solid var(--border-default)',
                 background: 'var(--bg-secondary)', color: 'var(--text-primary)',
                 fontSize: 13, fontFamily: 'inherit', resize: 'vertical',
@@ -184,16 +237,19 @@ export function OcrTool() {
             </button>
           </div>
         )}
-
-        {!result && !loading && files.length > 0 && (
-          <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 12, padding: 16 }}>
-            点击 "开始识别" 提取图片中的文字
-          </div>
-        )}
       </div>
     </ToolWindowShell>
   )
 }
+
+const navBtnStyle = (side: 'left' | 'right'): React.CSSProperties => ({
+  position: 'absolute',
+  [side]: 4, top: '50%', transform: 'translateY(-50%)',
+  width: 24, height: 24, borderRadius: '50%',
+  background: 'rgba(0,0,0,0.4)', color: '#fff',
+  border: 'none', fontSize: 10, cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+})
 
 const btnStyle: React.CSSProperties = {
   border: '1px solid var(--border-default)', borderRadius: 8,
