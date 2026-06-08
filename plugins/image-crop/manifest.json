@@ -1,0 +1,17 @@
+{
+  "id": "image-crop",
+  "name": "图片裁剪",
+  "category": "image",
+  "version": "1.0.0",
+  "description": "自由/固定比例裁剪图片",
+  "icon": "✂️",
+  "iconBg": "#FFF3E0",
+  "iconColor": "#E65100",
+  "tags": ["裁剪", "crop", "比例"],
+  "windowSize": { "width": 600, "height": 580 },
+  "windowResizable": true,
+  "acceptsFiles": true,
+  "fileTypes": [".jpg", ".jpeg", ".png", ".webp", ".bmp"],
+  "handler": "image-crop",
+  "author": "HuanWo Team"
+}

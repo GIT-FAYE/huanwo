@@ -2,6 +2,7 @@ import { BrowserWindow, screen, ipcMain, dialog, shell, clipboard, nativeImage, 
 import path from 'path'
 import fs from 'fs'
 import os from 'os'
+import { execSync } from 'child_process'
 import { compressImages } from './tools/image-compress'
 import { convertImages } from './tools/image-convert'
 import { previewRename, executeRename } from './tools/batch-rename'
@@ -239,11 +240,35 @@ ipcMain.handle('rename:execute', async (_event, previews: any[]) => {
 })
 
 // 翻译
+// 翻译
 ipcMain.handle('translate', async (_event, text: string, from?: string, to?: string, style?: string) => {
   const provider = getConfig('activeProvider') || 'qwen'
   const keyMap: Record<string, any> = { qwen: 'qwenApiKey', deepseek: 'deepseekApiKey', mimo: 'mimoApiKey' }
   const apiKey = getConfig(keyMap[provider]) || ''
   return await translateText(text, apiKey, provider, from, to, style)
+})
+
+// 保存裁剪图片到原目录
+ipcMain.handle('image:saveCrop', async (_event, dataUrl: string, originalPath: string) => {
+  const base64 = dataUrl.split(',')[1]
+  const buf = Buffer.from(base64, 'base64')
+  const ext = path.extname(originalPath)
+  const dir = path.dirname(originalPath)
+  const name = path.basename(originalPath, ext)
+  const outPath = path.join(dir, `${name}_cropped${ext}`)
+  let finalPath = outPath
+  let i = 1
+  while (fs.existsSync(finalPath)) {
+    finalPath = path.join(dir, `${name}_cropped_${i}${ext}`)
+    i++
+  }
+  fs.writeFileSync(finalPath, buf)
+  return finalPath
+})
+
+// 删除文件
+ipcMain.handle('file:delete', async (_event, filePath: string) => {
+  try { fs.unlinkSync(filePath); return true } catch { return false }
 })
 
 // OCR 图片识字
@@ -266,6 +291,36 @@ ipcMain.handle('image:dataUrl', async (_event, filePath: string) => {
   const buf = fs.readFileSync(filePath)
   const base64 = buf.toString('base64')
   return `data:image/${mime};base64,${base64}`
+})
+
+// 截屏（用于取色器，Windows 系统级截屏）
+ipcMain.handle('screen:capture', async () => {
+  const tmpFile = path.join(os.tmpdir(), `huanwo-screen-${Date.now()}.png`)
+  const psFile = path.join(os.tmpdir(), `huanwo-screen-${Date.now()}.ps1`)
+
+  const script = `
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+$screen = [System.Windows.Forms.Screen]::PrimaryScreen
+$bmp = New-Object System.Drawing.Bitmap($screen.Bounds.Width, $screen.Bounds.Height)
+$g = [System.Drawing.Graphics]::FromImage($bmp)
+$g.CopyFromScreen(0, 0, 0, 0, $bmp.Size)
+$bmp.Save('${tmpFile.replace(/\\/g, '\\\\')}', [System.Drawing.Imaging.ImageFormat]::Png)
+$g.Dispose()
+$bmp.Dispose()
+`
+  try {
+    fs.writeFileSync(psFile, script, 'utf-8')
+    execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psFile}"`, { timeout: 5000 })
+    const data = fs.readFileSync(tmpFile)
+    try { fs.unlinkSync(psFile) } catch {}
+    try { fs.unlinkSync(tmpFile) } catch {}
+    return 'data:image/png;base64,' + data.toString('base64')
+  } catch (e: any) {
+    try { fs.unlinkSync(psFile) } catch {}
+    try { fs.unlinkSync(tmpFile) } catch {}
+    return null
+  }
 })
 
 // 剪贴板文本

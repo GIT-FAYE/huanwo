@@ -3,7 +3,7 @@
   "name": "颜色取色",
   "category": "utility",
   "version": "1.0.0",
-  "description": "拾色器，颜色格式转换（HEX/RGB/HSL）",
+  "description": "屏幕吸管取色，HEX/RGB/HSL 格式转换",
   "icon": "🎨",
   "iconBg": "#FFF3E0",
   "iconColor": "#E65100",

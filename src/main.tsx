@@ -9,6 +9,7 @@ import { TextTranslateTool } from './tool-window/TextTranslateTool'
 import { QrcodeTool } from './tool-window/QrcodeTool'
 import { ColorPickerTool } from './tool-window/ColorPickerTool'
 import { OcrTool } from './tool-window/OcrTool'
+import { ImageCropTool } from './tool-window/ImageCropTool'
 import './shared/theme/theme.css'
 
 function applyTheme(theme: string) {
@@ -55,6 +56,8 @@ function Router() {
       return <QrcodeTool />
     case '/ocr':
       return <OcrTool />
+    case '/image-crop':
+      return <ImageCropTool />
     case '/color-picker':
       return <ColorPickerTool />
     case '/text-translate':
