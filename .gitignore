@@ -10,3 +10,4 @@ Thumbs.db
 spikes/
 .git_creds
 *.traineddata
+*.bat
