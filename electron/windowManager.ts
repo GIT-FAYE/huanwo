@@ -102,6 +102,7 @@ ipcMain.handle('tool:open', (_event, toolId: string) => {
     resizable: true,
     minWidth: 400, minHeight: 400,
     title: `唤我 - ${title}`,
+    icon: path.join(__dirname, '../../assets/icon.png'),
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true, nodeIntegration: false
